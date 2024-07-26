@@ -12,6 +12,12 @@ export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Pr
     const body = req.body as authBody;
     const response = await getTazamaToken(body);
 
+    if (!response) {
+      reply.code(401);
+      reply.send('Error: Did not receive a valid response');
+      return;
+    }
+
     reply.code(200);
     reply.send(response);
   } catch (err) {

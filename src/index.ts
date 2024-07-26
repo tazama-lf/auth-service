@@ -4,7 +4,7 @@ import initializeFastifyClient from './clients/fastify';
 import { configuration } from './config';
 
 export const loggerService: LoggerService = new LoggerService();
-export const authService = new AuthenticationService();
+export const authService: AuthenticationService = new AuthenticationService();
 
 const serve = async (): Promise<void> => {
   const fastify = await initializeFastifyClient();
