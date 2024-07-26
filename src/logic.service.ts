@@ -8,13 +8,14 @@ export const getTazamaToken = async (auth: authBody): Promise<string> => {
     const token = await authService.getToken(auth.username, auth.password);
 
     if (!token) {
-      loggerService.log(`Could not get Tazama token for username: ${auth.username}`, logContext);
+      const errMsg = `Could not get Tazama token for username: ${auth.username}`      
+      throw new Error(errMsg)
     }
 
     return token;
   } catch (error) {
     const err = error as Error;
-    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`);
-    throw err;
+    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
+    throw new Error('getTazamaToken retrieval failed');
   }
 };

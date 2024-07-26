@@ -23,7 +23,7 @@ const serve = async (): Promise<void> => {
       await serve();
     }
   } catch (err) {
-    loggerService.error(`Error while starting ${process.env.app} server`, err);
+    loggerService.error(`Error while starting ${configuration.app} server`, err);
     process.exit(1);
   }
 })();
