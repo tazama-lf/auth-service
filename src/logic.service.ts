@@ -8,8 +8,8 @@ export const getTazamaToken = async (auth: authBody): Promise<string> => {
     const token = await authService.getToken(auth.username, auth.password);
 
     if (!token) {
-      const errMsg = `Could not get Tazama token for username: ${auth.username}`      
-      throw new Error(errMsg)
+      const errMsg = `Could not get Tazama token for username: ${auth.username}`;
+      throw new Error(errMsg);
     }
 
     return token;
