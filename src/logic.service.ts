@@ -3,7 +3,7 @@ import { authService, loggerService } from '.';
 import { type authBody } from './interfaces/login';
 
 export const getTazamaToken = async (auth: authBody): Promise<string> => {
-  const logContext = 'handleLogin()';
+  const logContext = 'getTazamaToken()';
   try {
     const token = await authService.getToken(auth.username, auth.password);
 
