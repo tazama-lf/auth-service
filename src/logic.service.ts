@@ -2,14 +2,14 @@
 import { authService, loggerService } from '.';
 import { type authBody } from './interfaces/login';
 
-export const getTazamaToken = async (auth: authBody): Promise<string | undefined> => {
+export const getTazamaToken = async (auth: authBody): Promise<string> => {
   const logContext = 'getTazamaToken()';
   try {
     const token = await authService.getToken(auth.username, auth.password);
 
     if (!token) {
-      loggerService.error(`Could not get Tazama token for username: ${auth.username}`, logContext);
-      return;
+      const errMsg = `Could not get Tazama token for username: ${auth.username}`;
+      throw new Error(errMsg);
     }
 
     return token;

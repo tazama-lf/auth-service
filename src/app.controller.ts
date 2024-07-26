@@ -12,20 +12,15 @@ export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Pr
     const body = req.body as authBody;
     const response = await getTazamaToken(body);
 
-    if (!response) {
-      reply.code(401);
-      reply.send('Error: Did not receive a valid response');
-      return;
-    }
-
     reply.code(200);
     reply.send(response);
   } catch (err) {
-    const failMessage = `Failed to process execution request. \n${JSON.stringify(err, null, 4)}`;
+    const error = err as Error;
+    const failMessage = `${error.name}: ${error.message}\n${error.stack}`;
     loggerService.error(failMessage, 'ApplicationService');
 
-    reply.code(500);
-    reply.send(failMessage);
+    reply.code(401);
+    reply.send('Unauthorized');
   } finally {
     loggerService.log(`End - ${logContext} request`);
   }
