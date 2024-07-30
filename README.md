@@ -30,7 +30,7 @@ A [registry](https://github.com/frmscoe/docs) of environment variables is provid
 | `KEYCLOAK_REALM` | KeyCloak Realm for Tazama | `tazama`
 | `CLIENT_ID` | KeyCloak defined client for auth-lib | `auth-lib-client`
 | `CLIENT_SECRET` | The secret of the KeyCloak client | `someClientGeneratedSecret123`
-| `CERT_PATH` | The pem file path for signing Tazama tokens | `/path/to/private-key.pem`
+| `CERT_PATH_PRIVATE` | The pem file path for signing Tazama tokens | `/path/to/private-key.pem`
 
 #### Build and Start
 
