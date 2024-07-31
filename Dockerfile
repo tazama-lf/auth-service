@@ -45,28 +45,9 @@ ENV FUNCTION_NAME=auth-service
 ENV NODE_ENV=production
 ENV MAX_CPU=
 
-#Apm
-ENV APM_ACTIVE=true
-ENV APM_URL=http://apm-server.development.svc.cluster.local:8200/
-ENV APM_SECRET_TOKEN=
-
-# Database
-ENV DATABASE_URL=
-ENV DATABASE_NAME=configuration
-ENV DATABASE_USER=root
-ENV DATABASE_PASSWORD=
-ENV DATABASE_CERT_PATH=
-
-# Redis
-ENV REDIS_DB=0
-ENV REDIS_AUTH=
-ENV REDIS_SERVERS=
-ENV REDIS_IS_CLUSTER=
-ENV CACHETTL=300
-
 # Set healthcheck command
 HEALTHCHECK --interval=60s CMD [ -e /tmp/.lock ] || exit 1
-EXPOSE 4222
+EXPOSE 8080
 
 # Execute watchdog command
 CMD ["build/index.js"]
