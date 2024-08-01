@@ -45,9 +45,20 @@ ENV FUNCTION_NAME=auth-service
 ENV NODE_ENV=production
 ENV MAX_CPU=
 
+#Fastify
+ENV PORT=3000
+ENV HOST=0.0.0.0
+
+#Auth Lib
+ENV Auth_URL=http://localhost:8080
+ENV KEYCLOAK_REALM=tazama
+ENV CERT_PATH=private_key.pem
+ENV CLIENT_SECRET=""
+ENV CLIENT_ID=""
+
 # Set healthcheck command
 HEALTHCHECK --interval=60s CMD [ -e /tmp/.lock ] || exit 1
-EXPOSE 8080
+EXPOSE 3000
 
 # Execute watchdog command
 CMD ["build/index.js"]
