@@ -49,6 +49,7 @@ export default [
       '**/node_modules/**',
       '**/__tests__/**',
       '**/jest.config.ts',
+      '**/jest.setup.ts',
       '**/cluster-setup.ts',
     ],
   }
