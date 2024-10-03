@@ -1,5 +1,5 @@
 import { AuthenticationService } from '@frmscoe/auth-lib';
-import { LoggerService } from '@frmscoe/frms-coe-lib';
+import { LoggerService } from '@tazama-lf/frms-coe-lib';
 import initializeFastifyClient from './clients/fastify';
 import { configuration } from './config';
 
