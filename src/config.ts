@@ -2,7 +2,7 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-import {validateEnvVar} from '@tazama-lf/frms-coe-lib/lib/helpers/env'
+import { validateEnvVar } from '@tazama-lf/frms-coe-lib/lib/helpers/env';
 
 // Load .env file into process.env if it exists. This is convenient for running locally.
 dotenv.config({
@@ -19,10 +19,10 @@ export interface IConfig {
 }
 
 export const configuration: IConfig = {
-  app: validateEnvVar<string>("FUNCTION_NAME", 'string'),
-  env: validateEnvVar<string>("NODE_ENV", 'string'),
+  app: validateEnvVar<string>('FUNCTION_NAME', 'string'),
+  env: validateEnvVar<string>('NODE_ENV', 'string'),
   service: {
-    port: validateEnvVar<number>("PORT", 'number', true) || 3000,
-    host: validateEnvVar<string>("HOST", 'string'),
+    port: validateEnvVar<number>('PORT', 'number', true) || 3000,
+    host: validateEnvVar<string>('HOST', 'string'),
   },
 };

@@ -38,9 +38,6 @@ COPY service.yaml ./
 # Turn down the verbosity to default level.
 ENV NPM_CONFIG_LOGLEVEL warn
 
-ENV mode="http"
-ENV upstream_url="http://127.0.0.1:3000"
-ENV prefix_logs="false"
 ENV FUNCTION_NAME=auth-service
 ENV NODE_ENV=production
 ENV MAX_CPU=
@@ -56,8 +53,6 @@ ENV CERT_PATH=private_key.pem
 ENV CLIENT_SECRET=""
 ENV CLIENT_ID=""
 
-# Set healthcheck command
-HEALTHCHECK --interval=60s CMD [ -e /tmp/.lock ] || exit 1
 EXPOSE 3000
 
 # Execute watchdog command
