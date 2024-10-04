@@ -15,3 +15,7 @@ class MockAuthenticationService {
 const mockedAuthLib = { ...authLib, AuthenticationService: MockAuthenticationService };
 
 jest.mock('@frmscoe/auth-lib', () => mockedAuthLib);
+
+jest.mock('@tazama-lf/frms-coe-lib/lib/helpers/env', () => ({
+  validateEnvVar: jest.fn().mockReturnValue(''),
+}));
