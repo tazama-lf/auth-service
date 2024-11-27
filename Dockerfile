@@ -49,7 +49,7 @@ ENV HOST=0.0.0.0
 #Auth Lib
 ENV Auth_URL=http://localhost:8080
 ENV KEYCLOAK_REALM=tazama
-ENV CERT_PATH=private_key.pem
+ENV CERT_PATH_PRIVATE=private_key.pem
 ENV CLIENT_SECRET=""
 ENV CLIENT_ID=""
 
