@@ -1,15 +1,15 @@
 import { AuthenticationService } from '@frmscoe/auth-lib';
 import { LoggerService } from '@tazama-lf/frms-coe-lib';
 import initializeFastifyClient from './clients/fastify';
-import { configuration } from './config';
+import { config } from './config';
+import { validateLogConfig } from '@tazama-lf/frms-coe-lib/lib/config';
 
-export const loggerService: LoggerService = new LoggerService();
+export const loggerService: LoggerService = new LoggerService(config);
 export const authService: AuthenticationService = new AuthenticationService();
 
 const serve = async (): Promise<void> => {
   const fastify = await initializeFastifyClient();
-  const { port, host } = configuration.service;
-  fastify.listen({ port, host }, (err, address) => {
+  fastify.listen({ port: config.PORT, host: config.HOST }, (err, address) => {
     if (err) {
       throw Error(`${err.message}`);
     }
@@ -23,7 +23,7 @@ const serve = async (): Promise<void> => {
       await serve();
     }
   } catch (err) {
-    loggerService.error(`Error while starting ${configuration.app} server`, err);
+    loggerService.error(`Error while starting ${config.functionName} server`, err);
     process.exit(1);
   }
 })();
