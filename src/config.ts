@@ -2,27 +2,27 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-import { validateEnvVar } from '@tazama-lf/frms-coe-lib/lib/helpers/env';
+import { validateProcessorConfig } from '@tazama-lf/frms-coe-lib/lib/config';
+import type { AdditionalConfig, ProcessorConfig } from '@tazama-lf/frms-coe-lib/lib/config/processor.config';
 
 // Load .env file into process.env if it exists. This is convenient for running locally.
 dotenv.config({
   path: path.resolve(__dirname, '../.env'),
 });
 
-export interface IConfig {
-  app: string;
-  env: string;
-  service: {
-    port: number;
-    host: string;
-  };
+export interface Config {
+  PORT: number;
+  HOST: string;
 }
 
-export const configuration: IConfig = {
-  app: validateEnvVar<string>('FUNCTION_NAME', 'string'),
-  env: validateEnvVar<string>('NODE_ENV', 'string'),
-  service: {
-    port: validateEnvVar<number>('PORT', 'number', true) || 3000,
-    host: validateEnvVar<string>('HOST', 'string'),
+export const additionalEnvironmentVariables: AdditionalConfig[] = [
+  {
+    name: 'PORT',
+    type: 'number',
   },
-};
+  {
+    name: 'HOST',
+    type: 'string',
+  },
+];
+export const config = validateProcessorConfig(additionalEnvironmentVariables) as ProcessorConfig & Config;
