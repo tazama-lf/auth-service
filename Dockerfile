@@ -36,22 +36,25 @@ COPY deployment.yaml ./
 COPY service.yaml ./
 
 # Turn down the verbosity to default level.
-ENV NPM_CONFIG_LOGLEVEL warn
+ENV NPM_CONFIG_LOGLEVEL=warn
 
 ENV FUNCTION_NAME=auth-service
 ENV NODE_ENV=production
 ENV MAX_CPU=
 
-#Fastify
+# Fastify
 ENV PORT=3000
 ENV HOST=0.0.0.0
 
-#Auth Lib
+# Auth Lib
+ENV AUTH_PROVIDER=@tazama-lf/auth-lib-provider-keycloak
+ENV CERT_PATH_PRIVATE=private_key.pem
+
+# Provider: @tazama-lf/auth-lib-provider-keycloak
 ENV AUTH_URL=http://localhost:8080
 ENV KEYCLOAK_REALM=tazama
-ENV CERT_PATH_PRIVATE=private_key.pem
-ENV CLIENT_SECRET=""
-ENV CLIENT_ID=""
+ENV CLIENT_SECRET=
+ENV CLIENT_ID=
 
 EXPOSE 3000
 

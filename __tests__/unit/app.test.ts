@@ -1,7 +1,6 @@
-import { AuthenticationService } from '@frmscoe/auth-lib';
 import { getTazamaToken } from '../../src/logic.service';
 
-// AuthenticationService mocked in jest.setup.ts
+// TazamaAuthentication mocked in jest.setup.ts
 
 describe('App Services', () => {
   it('should handle getToken from library - happy path', async () => {
