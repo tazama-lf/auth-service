@@ -13,6 +13,7 @@ dotenv.config({
 export interface Config {
   PORT: number;
   HOST: string;
+  AUTH_PROVIDER: string;
 }
 
 export const additionalEnvironmentVariables: AdditionalConfig[] = [
@@ -22,6 +23,10 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
   },
   {
     name: 'HOST',
+    type: 'string',
+  },
+  {
+    name: 'AUTH_PROVIDER',
     type: 'string',
   },
 ];
