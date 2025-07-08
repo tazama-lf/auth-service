@@ -21,9 +21,7 @@ ajv.addSchema(credentialsSchema);
 export default async function initializeFastifyClient(): Promise<FastifyInstance> {
   fastify.addSchema(credentialsSchema);
 
-  fastify.setValidatorCompiler(({ schema }) => {
-    return ajv.compile(schema);
-  });
+  fastify.setValidatorCompiler(({ schema }) => ajv.compile(schema));
   await fastify.register(fastifyCors, {
     origin: '*',
     methods: ['POST'],
