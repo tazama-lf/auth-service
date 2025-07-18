@@ -24,7 +24,7 @@
   "dependencies": {
     "@fastify/cors": "^11.0.1",
     "@tazama-lf/auth-lib": "^2.0.0",
-    "@tazama-lf/auth-lib-provider-keycloak": "^1.0.0",
+    "@tazama-lf/auth-lib-provider-keycloak": "2.1.1-rc",
     "@tazama-lf/frms-coe-lib": "5.0.0",
     "@tazama-lf/frms-coe-startup-lib": "2.3.0",
     "ajv": "^8.17.1",
