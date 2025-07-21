@@ -25,8 +25,8 @@
     "@fastify/cors": "^11.0.1",
     "@tazama-lf/auth-lib": "^2.0.0",
     "@tazama-lf/auth-lib-provider-keycloak": "2.1.1-rc",
-    "@tazama-lf/frms-coe-lib": "5.0.0",
-    "@tazama-lf/frms-coe-startup-lib": "2.3.0",
+    "@tazama-lf/frms-coe-lib": "5.1.0-rc.7",
+    "@tazama-lf/frms-coe-startup-lib": "2.4.0-rc.4",
     "ajv": "^8.17.1",
     "fastify": "^5.4.0"
   },
