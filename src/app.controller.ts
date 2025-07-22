@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-import { type FastifyReply, type FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { loggerService } from '.';
 import { getTazamaToken } from './logic.service';
-import { type authBody } from './interfaces/login';
+import type { authBody } from './interfaces/login';
 
 export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   const logContext = 'LoginHandler()';
@@ -26,10 +26,8 @@ export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Pr
   }
 };
 
-const handleHealthCheck = async (): Promise<{ status: string }> => {
-  return {
+const handleHealthCheck = (): { status: string } => ({
     status: 'UP',
-  };
-};
+  });
 
 export { handleHealthCheck };

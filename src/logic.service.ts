@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { authService, loggerService } from '.';
-import { type authBody } from './interfaces/login';
+import type { authBody } from './interfaces/login';
 
 export const getTazamaToken = async (auth: authBody): Promise<string> => {
   const logContext = 'getTazamaToken()';

@@ -10,7 +10,7 @@ const serve = async (): Promise<void> => {
   const fastify = await initializeFastifyClient();
   fastify.listen({ port: config.PORT, host: config.HOST }, (err, address) => {
     if (err) {
-      throw Error(`${err.message}`);
+      throw Error(err.message);
     }
     loggerService.log(`Fastify listening on ${address}`);
   });
