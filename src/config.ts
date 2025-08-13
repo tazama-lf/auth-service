@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import * as dotenv from 'dotenv';
-import * as path from 'path';
+import * as path from 'node:path';
 
 import { validateProcessorConfig } from '@tazama-lf/frms-coe-lib/lib/config';
 import type { AdditionalConfig, ProcessorConfig } from '@tazama-lf/frms-coe-lib/lib/config/processor.config';
@@ -13,6 +13,7 @@ dotenv.config({
 export interface Config {
   PORT: number;
   HOST: string;
+  AUTH_PROVIDER: string;
 }
 
 export const additionalEnvironmentVariables: AdditionalConfig[] = [
@@ -22,6 +23,10 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
   },
   {
     name: 'HOST',
+    type: 'string',
+  },
+  {
+    name: 'AUTH_PROVIDER',
     type: 'string',
   },
 ];
