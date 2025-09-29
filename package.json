@@ -17,7 +17,8 @@
     "lint:eslint": "eslint",
     "lint:eslint-unused": "eslint --report-unused-disable-directives",
     "lint:eslint-no-inline": "eslint --no-inline-config",
-    "lint:prettier": "prettier --check \"**/*.ts\""
+    "lint:prettier": "prettier --check \"**/*.ts\"",
+    "prepare": "husky"
   },
   "author": "",
   "license": "Apache-2.0",
