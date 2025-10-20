@@ -5,6 +5,7 @@ import { config } from './config';
 
 export const loggerService: LoggerService = new LoggerService(config);
 export const authService: TazamaAuthentication = new TazamaAuthentication([config.AUTH_PROVIDER]);
+const ERROR_EXIT_CODE = 1;
 
 const serve = async (): Promise<void> => {
   const fastify = await initializeFastifyClient();
@@ -24,6 +25,6 @@ const serve = async (): Promise<void> => {
     }
   } catch (err) {
     loggerService.error(`Error while starting ${config.functionName} server`, err);
-    process.exit(1);
+    process.exit(ERROR_EXIT_CODE);
   }
 })();

@@ -24,7 +24,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@fastify/cors": "^11.0.1",
-    "@tazama-lf/auth-lib": "../auth-lib",
+    "@tazama-lf/auth-lib": "2.2.0-rc.1",
     "@tazama-lf/auth-lib-provider-keycloak": "^1.1.0",
     "@tazama-lf/frms-coe-lib": "6.0.0-rc.9",
     "@tazama-lf/frms-coe-startup-lib": "3.0.0-rc.1",
