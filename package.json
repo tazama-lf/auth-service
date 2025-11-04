@@ -1,6 +1,6 @@
 {
   "name": "auth-service",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "authentication service for Tazama",
   "main": "build/index.js",
   "scripts": {
@@ -24,10 +24,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@fastify/cors": "^11.0.1",
-    "@tazama-lf/auth-lib": "2.2.0-rc.1",
-    "@tazama-lf/auth-lib-provider-keycloak": "1.1.0",
-    "@tazama-lf/frms-coe-lib": "6.0.0-rc.9",
-    "@tazama-lf/frms-coe-startup-lib": "3.0.0-rc.1",
+    "@tazama-lf/auth-lib": "3.0.0",
+    "@tazama-lf/auth-lib-provider-keycloak": "3.0.0",
+    "@tazama-lf/frms-coe-lib": "6.0.0",
+    "@tazama-lf/frms-coe-startup-lib": "3.0.0",
     "ajv": "^8.17.1",
     "fastify": "^5.4.0"
   },
