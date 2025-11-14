@@ -6,6 +6,10 @@ export interface KeycloakGroupAccess {
   manageMembership: boolean;
 }
 
+export interface GroupAttribute {
+  TENANT_ID: string[];
+}
+
 export interface KeycloakGroup {
   id: string;
   name: string;
@@ -14,11 +18,12 @@ export interface KeycloakGroup {
   subGroupCount: number;
   subGroups: KeycloakGroup[];
   access: KeycloakGroupAccess;
+  attributes: GroupAttribute;
 }
 
 export interface KeycloakSubGroup extends KeycloakGroup {
   parentId: string;
-  attributes: Record<string, unknown>;
+  attributes: GroupAttribute;
   realmRoles: string[];
   clientRoles: Record<string, string[]>;
 }
