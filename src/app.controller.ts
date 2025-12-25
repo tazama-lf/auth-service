@@ -20,7 +20,7 @@ export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Pr
     loggerService.error(failMessage, 'ApplicationService');
 
     reply.code(401);
-    reply.send('Unauthorized');
+    reply.send(error.message);
   } finally {
     loggerService.log(`End - ${logContext} request`);
   }
