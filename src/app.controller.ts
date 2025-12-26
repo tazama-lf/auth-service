@@ -19,15 +19,20 @@ export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Pr
     const failMessage = `${error.name}: ${error.message}\n${error.stack}`;
     loggerService.error(failMessage, 'ApplicationService');
 
-    reply.code(401);
-    reply.send(error.message);
+    if (error.message.includes('Account temporarily locked due to too many failed login attempts.')) {
+      reply.code(429);
+      reply.send({ message: error.message });
+    } else {
+      reply.code(401);
+      reply.send({ message: error.message });
+    }
   } finally {
     loggerService.log(`End - ${logContext} request`);
   }
 };
 
 const handleHealthCheck = (): { status: string } => ({
-    status: 'UP',
-  });
+  status: 'UP',
+});
 
 export { handleHealthCheck };

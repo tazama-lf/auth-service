@@ -25,7 +25,7 @@ describe('App Services', () => {
       await getTazamaToken(authBody);
       throw new Error('UNREACHABLE');
     } catch (err) {
-      expect(err).toEqual(new Error('getTazamaToken retrieval failed'));
+      expect(err).toEqual(new Error('Could not get Tazama token for username: blank'));
     }
   });
 
@@ -39,7 +39,7 @@ describe('App Services', () => {
       await getTazamaToken(authBody);
       throw new Error('UNREACHABLE');
     } catch (err) {
-      expect(err).toEqual(new Error('getTazamaToken retrieval failed'));
+      expect(err).toBe('REJECT');
     }
   });
 });

@@ -16,6 +16,6 @@ export const getTazamaToken = async (auth: authBody): Promise<string> => {
   } catch (error) {
     const err = error as Error;
     loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw error; // Re-throw the original error to preserve the custom message
+    throw error;
   }
 };
