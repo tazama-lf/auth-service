@@ -100,7 +100,7 @@ export const newFetchUsersByRole = async (
   } catch (error) {
     const err = error as Error;
     loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error(err.message);
+    throw error;
   } finally {
     loggerService.log(`end - ${logContext}`);
   }
@@ -127,7 +127,7 @@ const fetchUserGroupDetails = async (decodedToken: TazamaToken, userGroup: strin
   } catch (error) {
     const err = error as Error;
     loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error('fetchUserGroupDetails retrieval failed');
+    throw error;
   } finally {
     loggerService.log(`end - ${logContext}`);
   }
@@ -148,7 +148,7 @@ const fetchSubGroups = async (decodedToken: TazamaToken, groupId: string): Promi
   } catch (error) {
     const err = error as Error;
     loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error('fetchSubGroups retrieval failed');
+    throw error;
   }
 };
 
@@ -167,6 +167,6 @@ const fetchGroupMembers = async (decodedToken: TazamaToken, subGroupId: string):
   } catch (error) {
     const err = error as Error;
     loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error('fetchSubGroupMembers retrieval failed');
+    throw error;
   }
 };

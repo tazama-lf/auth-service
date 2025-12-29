@@ -321,14 +321,14 @@ describe('App Services', () => {
       }
     });
 
-    it('should handle fetchUserGroupDetails error', async () => {
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+    it('should handle fetchUserGroupDetails error with string', async () => {
+      (fetch as jest.Mock).mockRejectedValueOnce('STRING_ERROR');
 
       try {
         await newFetchUsersByRole(mockToken, 'test-group');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('fetchUserGroupDetails retrieval failed'));
+        expect(err).toBe('STRING_ERROR');
       }
     });
 
@@ -354,7 +354,7 @@ describe('App Services', () => {
         await newFetchUsersByRole(mockToken, 'test-group', 'admin-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('fetchSubGroups retrieval failed'));
+        expect(err).toEqual(new Error('Network error'));
       }
     });
 
@@ -380,7 +380,7 @@ describe('App Services', () => {
         await newFetchUsersByRole(mockToken, 'test-group');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('fetchSubGroupMembers retrieval failed'));
+        expect(err).toEqual(new Error('Network error'));
       }
     });
 
@@ -406,13 +406,13 @@ describe('App Services', () => {
       }
     });
 
-    it('should handle group with empty TENANT_ID array', async () => {
+    it('should handle group with undefined TENANT_ID', async () => {
       const mockGroupDetails = [
         {
           id: 'group-1',
           name: 'test-group',
           attributes: {
-            TENANT_ID: [], // Empty array
+            // TENANT_ID is undefined
           },
           subGroupCount: 0,
         },
