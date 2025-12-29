@@ -18,7 +18,7 @@ export const getTazamaToken = async (auth: authBody): Promise<string> => {
   } catch (error) {
     const err = error as Error;
     loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error('getTazamaToken retrieval failed');
+    throw error;
   }
 };
 
