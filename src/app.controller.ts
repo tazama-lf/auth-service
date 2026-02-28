@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { loggerService } from '.';
-import { getTazamaToken, fetchUsersByRole, newFetchUsersByRole } from './logic.service';
+import { getTazamaToken, fetchUsersByRole } from './logic.service';
 import type { authBody } from './interfaces/login';
 import { verifyToken } from '@tazama-lf/auth-lib/lib/services/jwtService';
 import { extractTenant, type TazamaToken } from '@tazama-lf/auth-lib';
@@ -128,7 +128,7 @@ export const FetchGroup = async (req: FastifyRequest, reply: FastifyReply): Prom
       return;
     }
 
-    const response = await newFetchUsersByRole(verifiedAndDecodedToken, groupName, subGroupRoleName);
+    const response = await fetchUsersByRole(verifiedAndDecodedToken, groupName, subGroupRoleName);
 
     reply.code(StatusCodes.OK).send(response);
   } catch (error) {

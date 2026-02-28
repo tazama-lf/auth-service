@@ -2,7 +2,7 @@
 import { authService, loggerService } from '.';
 import type { authBody } from './interfaces/login';
 import type { TazamaToken } from '@tazama-lf/auth-lib';
-import type { KeycloakGroup, KeycloakGroupMember, KeycloakSubGroup } from './interfaces/keycloakGroup';
+import type { KeycloakGroup, KeycloakGroupMember, KeycloakSubGroup } from '@tazama-lf/auth-lib-provider-keycloak';
 
 export const getTazamaToken = async (auth: authBody): Promise<string> => {
   const logContext = 'getTazamaToken()';
@@ -22,33 +22,7 @@ export const getTazamaToken = async (auth: authBody): Promise<string> => {
   }
 };
 
-export const fetchUsersByRole = async (decodedToken: TazamaToken, groupName: string, roleName: string): Promise<KeycloakGroupMember[]> => {
-  const logContext = 'getUsersByRole()';
-  // const FIRST_INDEX = 0;
-  loggerService.log(`Start - ${logContext}`);
-  try {
-    const groupDetails = await fetchUserGroupDetails(decodedToken, groupName);
-    loggerService.log(`1. Group Details: ${JSON.stringify(groupDetails)}`, 'getUsersByRole() logic.service.ts');
-
-    const groupId = groupDetails[0]?.id;
-    const subGroups = await fetchSubGroups(decodedToken, groupId);
-
-    loggerService.log(`2. Sub Groups: ${JSON.stringify(subGroups)}`, 'getUsersByRole() logic.service.ts');
-    const subGroupId = subGroups.find((group: KeycloakSubGroup) => group.realmRoles.includes(roleName))?.id;
-
-    loggerService.log(`3. Sub Group ID: ${subGroupId}`, 'getUsersByRole() logic.service.ts');
-    const subGroupMembers = await fetchGroupMembers(decodedToken, subGroupId!);
-
-    loggerService.log(`4. Sub Group Members: ${JSON.stringify(subGroupMembers)}`, 'getUsersByRole() logic.service.ts');
-    return subGroupMembers;
-  } catch (error) {
-    const err = error as Error;
-    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error('getUsersByRole retrieval failed');
-  }
-};
-
-export const newFetchUsersByRole = async (
+export const fetchUsersByRole = async (
   decodedToken: TazamaToken,
   groupName: string,
   subGroupRoleName?: string,
@@ -106,7 +80,7 @@ export const newFetchUsersByRole = async (
   }
 };
 
-const fetchUserGroupDetails = async (decodedToken: TazamaToken, userGroup: string): Promise<KeycloakGroup[]> => {
+export const fetchUserGroupDetails = async (decodedToken: TazamaToken, userGroup: string): Promise<KeycloakGroup[]> => {
   const logContext = 'fetchUserGroupDetails()';
   loggerService.log(`Start - ${logContext}`);
   loggerService.log('userGroup:', userGroup);
@@ -133,7 +107,7 @@ const fetchUserGroupDetails = async (decodedToken: TazamaToken, userGroup: strin
   }
 };
 
-const fetchSubGroups = async (decodedToken: TazamaToken, groupId: string): Promise<KeycloakSubGroup[]> => {
+export const fetchSubGroups = async (decodedToken: TazamaToken, groupId: string): Promise<KeycloakSubGroup[]> => {
   const logContext = 'fetchSubGroups()';
   loggerService.log(`Start - ${logContext}`);
   try {
@@ -152,7 +126,7 @@ const fetchSubGroups = async (decodedToken: TazamaToken, groupId: string): Promi
   }
 };
 
-const fetchGroupMembers = async (decodedToken: TazamaToken, subGroupId: string): Promise<KeycloakGroupMember[]> => {
+export const fetchGroupMembers = async (decodedToken: TazamaToken, subGroupId: string): Promise<KeycloakGroupMember[]> => {
   const logContext = 'fetchSubGroupMembers()';
   loggerService.log(`Start - ${logContext}`);
   try {
