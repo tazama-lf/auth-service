@@ -70,13 +70,13 @@ export const fetchUsersByRole = async (
     loggerService.log(`3. Sub Group ID: ${groupId}`, 'getUsersByRole() logic.service.ts');
     const subGroupMembers = await fetchGroupMembers(decodedToken, groupId);
     loggerService.log(`4. Sub Group Members: ${JSON.stringify(subGroupMembers)}`, 'getUsersByRole() logic.service.ts');
+    loggerService.log(`end - ${logContext}`);
     return subGroupMembers;
   } catch (error) {
     const err = error as Error;
     loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw error;
-  } finally {
     loggerService.log(`end - ${logContext}`);
+    throw error;
   }
 };
 
@@ -97,13 +97,13 @@ export const fetchUserGroupDetails = async (decodedToken: TazamaToken, userGroup
       },
     );
     const groupDetails = await response.json();
+    loggerService.log(`end - ${logContext}`);
     return groupDetails as KeycloakGroup[];
   } catch (error) {
     const err = error as Error;
     loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw error;
-  } finally {
     loggerService.log(`end - ${logContext}`);
+    throw error;
   }
 };
 
