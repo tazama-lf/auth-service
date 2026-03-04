@@ -2,10 +2,10 @@
 import { authService, loggerService } from '.';
 import type { authBody } from './interfaces/login';
 import type { TazamaToken } from '@tazama-lf/auth-lib';
-import type { KeycloakGroup, KeycloakGroupMember, KeycloakSubGroup } from './interfaces/keycloakGroup';
+import type { KeycloakGroup, KeycloakGroupMember, KeycloakSubGroup } from '@tazama-lf/auth-lib-provider-keycloak';
+import { ZERO } from './constants';
 
 export const getTazamaToken = async (auth: authBody): Promise<string> => {
-  const logContext = 'getTazamaToken()';
   try {
     const token = await authService.getToken(auth.username, auth.password);
 
@@ -17,50 +17,80 @@ export const getTazamaToken = async (auth: authBody): Promise<string> => {
     return token;
   } catch (error) {
     const err = error as Error;
-    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error('getTazamaToken retrieval failed');
+    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, 'getTazamaToken()');
+    throw error;
   }
 };
 
-export const fetchUsersByRole = async (decodedToken: TazamaToken, userGroup: string, roleName: string): Promise<KeycloakGroupMember[]> => {
-  const logContext = 'getUsersByRole()';
-  const FIRST_INDEX = 0;
-  loggerService.log(`Start - ${logContext}`);
+export const fetchUsersByRole = async (
+  decodedToken: TazamaToken,
+  groupName: string,
+  subGroupRoleName?: string,
+): Promise<KeycloakGroupMember[]> => {
   try {
-    const groupDetails = await fetchUserGroupDetails(decodedToken, userGroup);
-    const subGroups = await fetchSubGroups(decodedToken, groupDetails[FIRST_INDEX].id);
-    const subGroupId = subGroups.find((group: KeycloakSubGroup) => group.realmRoles.includes(roleName))?.id;
-    const subGroupMembers = await fetchSubGroupMembers(decodedToken, subGroupId!);
+    const groupDetails = await fetchUserGroupDetails(decodedToken, groupName);
+    if (groupDetails.length === ZERO) {
+      throw new Error('No group found with the group name: ' + groupName);
+    }
+    const tenantGroup = groupDetails.find((group) => {
+      try {
+        const attrs = (group as unknown as Record<string, unknown>).attributes as Record<string, unknown>;
+        return (attrs.TENANT_ID as string[]).includes(decodedToken.tenantId);
+      } catch {
+        return false;
+      }
+    });
+
+    if (!tenantGroup) {
+      throw new Error('No group found for the tenant' + decodedToken.tenantId);
+    }
+
+    let groupId = tenantGroup.id;
+
+    if (subGroupRoleName) {
+      if (tenantGroup.subGroupCount === ZERO) {
+        throw new Error('No sub groups found for the tenant group: ' + tenantGroup.id);
+      } else {
+        const subGroups = await fetchSubGroups(decodedToken, tenantGroup.id);
+
+        const filteredSubGroup = subGroups.find((group: KeycloakSubGroup) => group.name === subGroupRoleName);
+
+        if (!filteredSubGroup) {
+          throw new Error('No sub group found with the role name: ' + subGroupRoleName);
+        }
+        groupId = filteredSubGroup.id;
+      }
+    }
+    const subGroupMembers = await fetchGroupMembers(decodedToken, groupId);
     return subGroupMembers;
   } catch (error) {
     const err = error as Error;
-    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error('getUsersByRole retrieval failed');
+    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, 'getUsersByRole()');
+    throw error;
   }
 };
 
-const fetchUserGroupDetails = async (decodedToken: TazamaToken, userGroup: string): Promise<KeycloakGroup[]> => {
-  const logContext = 'fetchUserGroupDetails()';
-  loggerService.log(`Start - ${logContext}`);
+export const fetchUserGroupDetails = async (decodedToken: TazamaToken, userGroup: string): Promise<KeycloakGroup[]> => {
   try {
-    const response = await fetch(`${process.env.AUTH_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/groups?search=${userGroup}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${decodedToken.tokenString}`,
+    const response = await fetch(
+      `${process.env.AUTH_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/groups?search=${userGroup}&briefRepresentation=false`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${decodedToken.tokenString}`,
+        },
       },
-    });
+    );
     const groupDetails = await response.json();
     return groupDetails as KeycloakGroup[];
   } catch (error) {
     const err = error as Error;
-    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error('fetchUserGroupDetails retrieval failed');
+    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, 'fetchUserGroupDetails()');
+    throw error;
   }
 };
 
-const fetchSubGroups = async (decodedToken: TazamaToken, groupId: string): Promise<KeycloakSubGroup[]> => {
-  const logContext = 'fetchSubGroups()';
-  loggerService.log(`Start - ${logContext}`);
+export const fetchSubGroups = async (decodedToken: TazamaToken, groupId: string): Promise<KeycloakSubGroup[]> => {
   try {
     const response = await fetch(`${process.env.AUTH_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/groups/${groupId}/children`, {
       method: 'GET',
@@ -72,14 +102,12 @@ const fetchSubGroups = async (decodedToken: TazamaToken, groupId: string): Promi
     return subGroupDetails as KeycloakSubGroup[];
   } catch (error) {
     const err = error as Error;
-    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error('fetchSubGroups retrieval failed');
+    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, 'fetchSubGroups()');
+    throw error;
   }
 };
 
-const fetchSubGroupMembers = async (decodedToken: TazamaToken, subGroupId: string): Promise<KeycloakGroupMember[]> => {
-  const logContext = 'fetchSubGroupMembers()';
-  loggerService.log(`Start - ${logContext}`);
+export const fetchGroupMembers = async (decodedToken: TazamaToken, subGroupId: string): Promise<KeycloakGroupMember[]> => {
   try {
     const response = await fetch(`${process.env.AUTH_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/groups/${subGroupId}/members`, {
       method: 'GET',
@@ -91,7 +119,7 @@ const fetchSubGroupMembers = async (decodedToken: TazamaToken, subGroupId: strin
     return members as KeycloakGroupMember[];
   } catch (error) {
     const err = error as Error;
-    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
-    throw new Error('fetchSubGroupMembers retrieval failed');
+    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, 'fetchGroupMembers()');
+    throw error;
   }
 };
