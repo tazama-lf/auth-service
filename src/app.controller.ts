@@ -36,12 +36,12 @@ const authenticateRequest = (authorizationHeader: string | undefined): Authentic
     };
   }
 
-  const [, token] = authorizationHeader.split(' ');
-  if (!token) {
+  const [scheme, token] = authorizationHeader.trim().split(/\s+/);
+  if (scheme.toLowerCase() !== 'bearer' || !token) {
     return {
       success: false,
       statusCode: StatusCodes.UNAUTHORIZED,
-      message: 'Bearer Token is missing',
+      message: 'Bearer Token is missing or malformed',
     };
   }
 
@@ -101,6 +101,11 @@ export const FetchUsersByRoleHandler = async (req: FastifyRequest, reply: Fastif
   const query: UsersByRoleQuery = req.query! as UsersByRoleQuery;
 
   try {
+    if (!query.groupName) {
+      reply.code(StatusCodes.BAD_REQUEST).send('groupName query parameter is required');
+      return;
+    }
+
     const authResult = authenticateRequest(authorizationHeader);
 
     if (!authResult.success) {
@@ -149,7 +154,7 @@ export const FetchGroup = async (req: FastifyRequest, reply: FastifyReply): Prom
     const failMessage = `${err.name}: ${err.message}\n${err.stack}`;
     loggerService.error(failMessage, 'ApplicationService');
 
-    reply.code(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
+    reply.code(StatusCodes.INTERNAL_SERVER_ERROR).send('Internal Server Error');
   } finally {
     loggerService.log('End - FetchGroup() request');
   }

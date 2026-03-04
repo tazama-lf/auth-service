@@ -3,7 +3,7 @@ import { authService, loggerService } from '.';
 import type { authBody } from './interfaces/login';
 import type { TazamaToken } from '@tazama-lf/auth-lib';
 import type { KeycloakGroup, KeycloakGroupMember, KeycloakSubGroup } from '@tazama-lf/auth-lib-provider-keycloak';
-import { ZERO } from './constants';
+import { ZERO, KEYCLOAK_REQUEST_TIMEOUT } from './constants';
 
 export const getTazamaToken = async (auth: authBody): Promise<string> => {
   try {
@@ -42,7 +42,7 @@ export const fetchUsersByRole = async (
     });
 
     if (!tenantGroup) {
-      throw new Error('No group found for the tenant' + decodedToken.tenantId);
+      throw new Error('No group found for the tenant ' + decodedToken.tenantId);
     }
 
     let groupId = tenantGroup.id;
@@ -51,7 +51,7 @@ export const fetchUsersByRole = async (
       if (tenantGroup.subGroupCount === ZERO) {
         throw new Error('No sub groups found for the tenant group: ' + tenantGroup.id);
       } else {
-        const subGroups = await fetchSubGroups(decodedToken, tenantGroup.id);
+        const subGroups = await fetchSubGroups(decodedToken, tenantGroup.id ?? '');
 
         const filteredSubGroup = subGroups.find((group: KeycloakSubGroup) => group.name === subGroupRoleName);
 
@@ -61,26 +61,39 @@ export const fetchUsersByRole = async (
         groupId = filteredSubGroup.id;
       }
     }
-    const subGroupMembers = await fetchGroupMembers(decodedToken, groupId);
+    const subGroupMembers = await fetchGroupMembers(decodedToken, groupId ?? '');
     return subGroupMembers;
   } catch (error) {
     const err = error as Error;
-    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, 'getUsersByRole()');
+    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, 'fetchUsersByRole()');
     throw error;
   }
 };
 
 export const fetchUserGroupDetails = async (decodedToken: TazamaToken, userGroup: string): Promise<KeycloakGroup[]> => {
   try {
+    const encodedUserGroup = encodeURIComponent(userGroup);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, KEYCLOAK_REQUEST_TIMEOUT);
+
     const response = await fetch(
-      `${process.env.AUTH_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/groups?search=${userGroup}&briefRepresentation=false`,
+      `${process.env.AUTH_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/groups?search=${encodedUserGroup}&briefRepresentation=false`,
       {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${decodedToken.tokenString}`,
         },
+        signal: controller.signal,
       },
     );
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Keycloak API error: ${response.status} ${response.statusText}`);
+    }
+
     const groupDetails = await response.json();
     return groupDetails as KeycloakGroup[];
   } catch (error) {
@@ -92,12 +105,24 @@ export const fetchUserGroupDetails = async (decodedToken: TazamaToken, userGroup
 
 export const fetchSubGroups = async (decodedToken: TazamaToken, groupId: string): Promise<KeycloakSubGroup[]> => {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, KEYCLOAK_REQUEST_TIMEOUT);
+
     const response = await fetch(`${process.env.AUTH_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/groups/${groupId}/children`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${decodedToken.tokenString}`,
       },
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Keycloak API error: ${response.status} ${response.statusText}`);
+    }
+
     const subGroupDetails = await response.json();
     return subGroupDetails as KeycloakSubGroup[];
   } catch (error) {
@@ -109,12 +134,24 @@ export const fetchSubGroups = async (decodedToken: TazamaToken, groupId: string)
 
 export const fetchGroupMembers = async (decodedToken: TazamaToken, subGroupId: string): Promise<KeycloakGroupMember[]> => {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, KEYCLOAK_REQUEST_TIMEOUT);
+
     const response = await fetch(`${process.env.AUTH_URL}/admin/realms/${process.env.KEYCLOAK_REALM}/groups/${subGroupId}/members`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${decodedToken.tokenString}`,
       },
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Keycloak API error: ${response.status} ${response.statusText}`);
+    }
+
     const members = await response.json();
     return members as KeycloakGroupMember[];
   } catch (error) {
