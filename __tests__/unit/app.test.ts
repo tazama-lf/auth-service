@@ -541,34 +541,43 @@ describe('App Services', () => {
     it('fetchUserGroupDetails handles missing env variables', async () => {
       const originalAuthUrl = process.env.AUTH_URL;
       const originalRealm = process.env.KEYCLOAK_REALM;
-      delete process.env.AUTH_URL;
-      delete process.env.KEYCLOAK_REALM;
-      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
-      await (await import('../../src/logic.service')).fetchUserGroupDetails(mockToken, 'test-group');
-      process.env.AUTH_URL = originalAuthUrl;
-      process.env.KEYCLOAK_REALM = originalRealm;
+      try {
+        delete process.env.AUTH_URL;
+        delete process.env.KEYCLOAK_REALM;
+        (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
+        await (await import('../../src/logic.service')).fetchUserGroupDetails(mockToken, 'test-group');
+      } finally {
+        process.env.AUTH_URL = originalAuthUrl;
+        process.env.KEYCLOAK_REALM = originalRealm;
+      }
     });
 
     it('fetchSubGroups handles missing env variables', async () => {
       const originalAuthUrl = process.env.AUTH_URL;
       const originalRealm = process.env.KEYCLOAK_REALM;
-      delete process.env.AUTH_URL;
-      delete process.env.KEYCLOAK_REALM;
-      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
-      await (await import('../../src/logic.service')).fetchSubGroups(mockToken, 'group-1');
-      process.env.AUTH_URL = originalAuthUrl;
-      process.env.KEYCLOAK_REALM = originalRealm;
+      try {
+        delete process.env.AUTH_URL;
+        delete process.env.KEYCLOAK_REALM;
+        (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
+        await (await import('../../src/logic.service')).fetchSubGroups(mockToken, 'group-1');
+      } finally {
+        process.env.AUTH_URL = originalAuthUrl;
+        process.env.KEYCLOAK_REALM = originalRealm;
+      }
     });
 
     it('fetchGroupMembers handles missing env variables', async () => {
       const originalAuthUrl = process.env.AUTH_URL;
       const originalRealm = process.env.KEYCLOAK_REALM;
-      delete process.env.AUTH_URL;
-      delete process.env.KEYCLOAK_REALM;
-      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
-      await (await import('../../src/logic.service')).fetchGroupMembers(mockToken, 'subgroup-1');
-      process.env.AUTH_URL = originalAuthUrl;
-      process.env.KEYCLOAK_REALM = originalRealm;
+      try {
+        delete process.env.AUTH_URL;
+        delete process.env.KEYCLOAK_REALM;
+        (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
+        await (await import('../../src/logic.service')).fetchGroupMembers(mockToken, 'subgroup-1');
+      } finally {
+        process.env.AUTH_URL = originalAuthUrl;
+        process.env.KEYCLOAK_REALM = originalRealm;
+      }
     });
 
     it('fetchUserGroupDetails handles HTTP error response', async () => {

@@ -28,21 +28,17 @@ type AuthenticationResult = AuthResult | AuthError;
  * @returns AuthenticationResult containing either the decoded token or error details
  */
 const authenticateRequest = (authorizationHeader: string | undefined): AuthenticationResult => {
-  if (!authorizationHeader) {
-    return {
-      success: false,
-      statusCode: StatusCodes.UNAUTHORIZED,
-      message: 'Authorization header is missing',
-    };
-  }
+  const unauthorized = (message: string): AuthError => ({
+    success: false,
+    statusCode: StatusCodes.UNAUTHORIZED,
+    message,
+  });
+
+  if (!authorizationHeader) return unauthorized('Authorization header is missing');
 
   const [scheme, token] = authorizationHeader.trim().split(/\s+/);
-  if (scheme.toLowerCase() !== 'bearer' || !token) {
-    return {
-      success: false,
-      statusCode: StatusCodes.UNAUTHORIZED,
-      message: 'Bearer Token is missing or malformed',
-    };
+  if (!scheme || !token || scheme.toLowerCase() !== 'bearer') {
+    return unauthorized('Bearer token is missing or malformed');
   }
 
   try {
@@ -50,25 +46,13 @@ const authenticateRequest = (authorizationHeader: string | undefined): Authentic
     const tenantResponse = extractTenant(true, authorizationHeader);
 
     if (!tenantResponse.success) {
-      return {
-        success: false,
-        statusCode: StatusCodes.UNAUTHORIZED,
-        message: 'Tenant response is not successful(false)',
-      };
+      return unauthorized('Tenant response is not successful(false)');
     }
 
-    return {
-      success: true,
-      decodedToken,
-    };
+    return { success: true, decodedToken };
   } catch (err) {
-    const error = err as Error;
-    loggerService.error(`Token verification failed: ${error.message}`, 'authenticateRequest');
-    return {
-      success: false,
-      statusCode: StatusCodes.UNAUTHORIZED,
-      message: 'Unauthorized',
-    };
+    loggerService.error(`Token verification failed: ${(err as Error).message}`, 'authenticateRequest');
+    return unauthorized('Unauthorized');
   }
 };
 
@@ -101,7 +85,7 @@ export const FetchUsersByRoleHandler = async (req: FastifyRequest, reply: Fastif
   const query: UsersByRoleQuery = req.query! as UsersByRoleQuery;
 
   try {
-    if (!query.groupName) {
+    if (!query.groupName.trim()) {
       reply.code(StatusCodes.BAD_REQUEST).send('groupName query parameter is required');
       return;
     }
