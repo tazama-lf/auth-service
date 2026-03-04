@@ -32,7 +32,14 @@ export const fetchUsersByRole = async (
     if (groupDetails.length === ZERO) {
       throw new Error('No group found with the group name: ' + groupName);
     }
-    const tenantGroup = groupDetails.find((group) => group.attributes.TENANT_ID.includes(decodedToken.tenantId));
+    const tenantGroup = groupDetails.find((group) => {
+      try {
+        const attrs = (group as unknown as Record<string, unknown>).attributes as Record<string, unknown>;
+        return (attrs.TENANT_ID as string[]).includes(decodedToken.tenantId);
+      } catch {
+        return false;
+      }
+    });
 
     if (!tenantGroup) {
       throw new Error('No group found for the tenant' + decodedToken.tenantId);
