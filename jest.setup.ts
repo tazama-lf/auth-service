@@ -26,6 +26,18 @@ jest.mock('@tazama-lf/frms-coe-lib/lib/config', () => ({
     nodeEnv: 'test',
   }),
   validateLogConfig: jest.fn().mockReturnValue({
-    logLevel: '',
+    logLevel: 'info',
   }),
+}));
+
+// Mock LoggerService to prevent initialization errors
+jest.mock('@tazama-lf/frms-coe-lib', () => ({
+  LoggerService: jest.fn().mockImplementation(() => ({
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+  })),
+  validateEnvVar: jest.fn().mockReturnValue(''),
 }));
