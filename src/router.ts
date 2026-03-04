@@ -8,10 +8,7 @@ function Routes(fastify: FastifyInstance, options: unknown): void {
   fastify.get('/', handleHealthCheck);
   fastify.get('/health', handleHealthCheck);
   fastify.post('/v1/auth/login', SetOptions(LoginHandler, 'credentialsSchema'));
-
   fastify.get('/v1/auth/user/:rolename', FetchUsersByRoleHandler);
-
-  //new route
   fastify.get('/v1/auth', FetchGroup);
 }
 

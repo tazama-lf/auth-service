@@ -9,9 +9,6 @@ import type { UsersByRoleQuery } from './interfaces/query';
 import { StatusCodes } from './interfaces/statusCodes';
 
 export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
-  const logContext = 'LoginHandler()';
-  loggerService.log(`Start - ${logContext} request`);
-
   try {
     const body = req.body as authBody;
     const response = await getTazamaToken(body);
@@ -24,27 +21,21 @@ export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Pr
     loggerService.error(failMessage, 'ApplicationService');
 
     if (error.message.includes('Account temporarily locked due to too many failed login attempts.')) {
-      reply.code(429);
+      reply.code(StatusCodes.TOO_MANY_REQUESTS);
       reply.send({ message: error.message });
     } else {
-      reply.code(401);
+      reply.code(StatusCodes.UNAUTHORIZED);
       reply.send({ message: error.message });
     }
   } finally {
-    loggerService.log(`End - ${logContext} request`);
+    loggerService.log('End - LoginHandler() request');
   }
 };
 
 export const FetchUsersByRoleHandler = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
-  const logContext = 'FetchUsersByRoleHandler()';
   const authorizationHeader = req.headers.authorization;
 
-  //group name is usersbyrolequery
   const query: UsersByRoleQuery = req.query! as UsersByRoleQuery;
-
-  loggerService.log(`Start - ${logContext} request`, 'FetchUsersByRoleHandler app.controller.ts');
-  loggerService.log(`Query Params: ${JSON.stringify(query)}`, 'FetchUsersByRoleHandler app.controller.ts');
-
   try {
     if (!authorizationHeader) {
       reply.code(StatusCodes.UNAUTHORIZED).send('Unauthorized');
@@ -56,27 +47,15 @@ export const FetchUsersByRoleHandler = async (req: FastifyRequest, reply: Fastif
       throw new Error('Unauthorized');
     }
 
-    loggerService.log(`1. token: ${token}`, 'FetchUsersByRoleHandler app.controller.ts');
-
     const decodedToken = verifyToken(token) as TazamaToken;
-
-    loggerService.log(`2. decodedToken: ${JSON.stringify(decodedToken)}`, 'FetchUsersByRoleHandler app.controller.ts');
-
     const tenantResponse = extractTenant(true, authorizationHeader);
-
-    loggerService.log(`3.tenantResponse: ${JSON.stringify(tenantResponse)}`, 'FetchUsersByRoleHandler app.controller.ts');
 
     if (!tenantResponse.success) {
       throw new Error('Unauthorized');
     }
 
     const roleName = (req.params as { rolename: string }).rolename;
-
-    loggerService.log(`4. roleName: ${roleName}`, 'FetchUsersByRoleHandler app.controller.ts');
-
-    // group name is from query param "Tenant_002"
     const users = await fetchUsersByRole(decodedToken, query.groupName, roleName);
-    loggerService.log(`5. users: ${JSON.stringify(users)}`, 'FetchUsersByRoleHandler app.controller.ts');
 
     reply.code(StatusCodes.OK).send(users);
   } catch (err) {
@@ -86,29 +65,21 @@ export const FetchUsersByRoleHandler = async (req: FastifyRequest, reply: Fastif
 
     reply.code(StatusCodes.INTERNAL_SERVER_ERROR).send('Internal Server Error');
   } finally {
-    loggerService.log(`End - ${logContext} request`);
+    loggerService.log('End - FetchUsersByRoleHandler() request');
   }
 };
 
 export const FetchGroup = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
-  // using group name and tenantID
-  // {{baseurl}}/admin/realms/{{realm}}/groups?briefRepresentation=false&groupName={{group_name}}
-
-  const logContext = 'FetchGroup()';
-  loggerService.log(`Start - ${logContext} request`);
-
   const authorizationHeader = req.headers.authorization;
   const query: UsersByRoleQuery = req.query! as UsersByRoleQuery;
 
   const { groupName, subGroupRoleName } = query;
   if (!groupName) {
-    //throw bad request error
-    reply.code(400).send('groupName query parameter is required');
+    reply.code(StatusCodes.BAD_REQUEST).send('groupName query parameter is required');
     return;
   }
 
   try {
-    // Implementation to fetch group by name and tenantId goes here
     if (!authorizationHeader) {
       reply.code(StatusCodes.UNAUTHORIZED).send('Authorization header is missing');
       return;
@@ -138,7 +109,7 @@ export const FetchGroup = async (req: FastifyRequest, reply: FastifyReply): Prom
 
     reply.code(StatusCodes.INTERNAL_SERVER_ERROR).send(err.message);
   } finally {
-    loggerService.log(`End - ${logContext} request`);
+    loggerService.log('End - FetchGroup() request');
   }
 };
 
