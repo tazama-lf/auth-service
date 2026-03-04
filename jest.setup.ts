@@ -26,6 +26,6 @@ jest.mock('@tazama-lf/frms-coe-lib/lib/config', () => ({
     nodeEnv: 'test',
   }),
   validateLogConfig: jest.fn().mockReturnValue({
-    logstashLevel: '',
+    logLevel: '',
   }),
 }));
