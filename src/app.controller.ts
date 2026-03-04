@@ -8,6 +8,70 @@ import { extractTenant, type TazamaToken } from '@tazama-lf/auth-lib';
 import type { UsersByRoleQuery } from './interfaces/query';
 import { StatusCodes } from './interfaces/statusCodes';
 
+interface AuthResult {
+  success: true;
+  decodedToken: TazamaToken;
+}
+
+interface AuthError {
+  success: false;
+  statusCode: StatusCodes;
+  message: string;
+}
+
+type AuthenticationResult = AuthResult | AuthError;
+
+/**
+ * Authenticates and authorizes the request by validating the authorization header,
+ * extracting and verifying the token, and validating the tenant.
+ * @param authorizationHeader - The authorization header from the request
+ * @returns AuthenticationResult containing either the decoded token or error details
+ */
+const authenticateRequest = (authorizationHeader: string | undefined): AuthenticationResult => {
+  if (!authorizationHeader) {
+    return {
+      success: false,
+      statusCode: StatusCodes.UNAUTHORIZED,
+      message: 'Authorization header is missing',
+    };
+  }
+
+  const [, token] = authorizationHeader.split(' ');
+  if (!token) {
+    return {
+      success: false,
+      statusCode: StatusCodes.UNAUTHORIZED,
+      message: 'Bearer Token is missing',
+    };
+  }
+
+  try {
+    const decodedToken = verifyToken(token) as TazamaToken;
+    const tenantResponse = extractTenant(true, authorizationHeader);
+
+    if (!tenantResponse.success) {
+      return {
+        success: false,
+        statusCode: StatusCodes.UNAUTHORIZED,
+        message: 'Tenant response is not successful(false)',
+      };
+    }
+
+    return {
+      success: true,
+      decodedToken,
+    };
+  } catch (err) {
+    const error = err as Error;
+    loggerService.error(`Token verification failed: ${error.message}`, 'authenticateRequest');
+    return {
+      success: false,
+      statusCode: StatusCodes.UNAUTHORIZED,
+      message: 'Unauthorized',
+    };
+  }
+};
+
 export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   try {
     const body = req.body as authBody;
@@ -34,28 +98,18 @@ export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Pr
 
 export const FetchUsersByRoleHandler = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   const authorizationHeader = req.headers.authorization;
-
   const query: UsersByRoleQuery = req.query! as UsersByRoleQuery;
+
   try {
-    if (!authorizationHeader) {
-      reply.code(StatusCodes.UNAUTHORIZED).send('Unauthorized');
+    const authResult = authenticateRequest(authorizationHeader);
+
+    if (!authResult.success) {
+      reply.code(authResult.statusCode).send(authResult.message);
       return;
     }
 
-    const [, token] = authorizationHeader.split(' ');
-    if (!token) {
-      throw new Error('Unauthorized');
-    }
-
-    const decodedToken = verifyToken(token) as TazamaToken;
-    const tenantResponse = extractTenant(true, authorizationHeader);
-
-    if (!tenantResponse.success) {
-      throw new Error('Unauthorized');
-    }
-
     const roleName = (req.params as { rolename: string }).rolename;
-    const users = await fetchUsersByRole(decodedToken, query.groupName, roleName);
+    const users = await fetchUsersByRole(authResult.decodedToken, query.groupName, roleName);
 
     reply.code(StatusCodes.OK).send(users);
   } catch (err) {
@@ -80,26 +134,14 @@ export const FetchGroup = async (req: FastifyRequest, reply: FastifyReply): Prom
   }
 
   try {
-    if (!authorizationHeader) {
-      reply.code(StatusCodes.UNAUTHORIZED).send('Authorization header is missing');
+    const authResult = authenticateRequest(authorizationHeader);
+
+    if (!authResult.success) {
+      reply.code(authResult.statusCode).send(authResult.message);
       return;
     }
 
-    const [, token] = authorizationHeader.split(' ');
-    if (!token) {
-      reply.code(StatusCodes.UNAUTHORIZED).send('Bearer Token is missing');
-      return;
-    }
-
-    const verifiedAndDecodedToken = verifyToken(token) as TazamaToken;
-    const tenantResponse = extractTenant(true, authorizationHeader);
-
-    if (!tenantResponse.success) {
-      reply.code(StatusCodes.UNAUTHORIZED).send('Tenant response is not successful(false)');
-      return;
-    }
-
-    const response = await fetchUsersByRole(verifiedAndDecodedToken, groupName, subGroupRoleName);
+    const response = await fetchUsersByRole(authResult.decodedToken, groupName, subGroupRoleName);
 
     reply.code(StatusCodes.OK).send(response);
   } catch (error) {
