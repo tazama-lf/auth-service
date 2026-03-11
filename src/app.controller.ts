@@ -57,6 +57,8 @@ const authenticateRequest = (authorizationHeader: string | undefined): Authentic
 };
 
 export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  const logContext = 'LoginHandler()';
+  loggerService.log(`Start - ${logContext} request`);
   try {
     const body = req.body as authBody;
     const response = await getTazamaToken(body);
@@ -76,11 +78,13 @@ export const LoginHandler = async (req: FastifyRequest, reply: FastifyReply): Pr
       reply.send({ message: error.message });
     }
   } finally {
-    loggerService.log('End - LoginHandler() request');
+    loggerService.log(`End - ${logContext} request`);
   }
 };
 
 export const FetchUsersByRoleHandler = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  const logContext = 'FetchUsersByRoleHandler()';
+  loggerService.log(`Start - ${logContext} request`);
   const authorizationHeader = req.headers.authorization;
   const query: UsersByRoleQuery = req.query! as UsersByRoleQuery;
 
@@ -108,11 +112,13 @@ export const FetchUsersByRoleHandler = async (req: FastifyRequest, reply: Fastif
 
     reply.code(StatusCodes.INTERNAL_SERVER_ERROR).send('Internal Server Error');
   } finally {
-    loggerService.log('End - FetchUsersByRoleHandler() request');
+    loggerService.log(`End - ${logContext} request`);
   }
 };
 
 export const FetchGroup = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  const logContext = 'FetchGroup()';
+  loggerService.log(`Start - ${logContext} request`);
   const authorizationHeader = req.headers.authorization;
   const query: UsersByRoleQuery = req.query! as UsersByRoleQuery;
 
@@ -140,7 +146,7 @@ export const FetchGroup = async (req: FastifyRequest, reply: FastifyReply): Prom
 
     reply.code(StatusCodes.INTERNAL_SERVER_ERROR).send('Internal Server Error');
   } finally {
-    loggerService.log('End - FetchGroup() request');
+    loggerService.log(`End - ${logContext} request`);
   }
 };
 

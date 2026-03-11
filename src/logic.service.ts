@@ -5,6 +5,7 @@ import type { TazamaToken } from '@tazama-lf/auth-lib';
 import { keycloakProvider, type KeycloakGroupMember } from '@tazama-lf/auth-lib-provider-keycloak';
 
 export const getTazamaToken = async (auth: authBody): Promise<string> => {
+  const logContext = 'getTazamaToken()';
   try {
     const token = await authService.getToken(auth.username, auth.password);
 
@@ -16,7 +17,7 @@ export const getTazamaToken = async (auth: authBody): Promise<string> => {
     return token;
   } catch (error) {
     const err = error as Error;
-    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, 'getTazamaToken()');
+    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
     throw error;
   }
 };
@@ -26,11 +27,12 @@ export const fetchUsersByRole = async (
   groupName: string,
   subGroupRoleName?: string,
 ): Promise<KeycloakGroupMember[]> => {
+  const logContext = 'fetchUsersByRole()';
   try {
     return await keycloakProvider.fetchUsersByRole(decodedToken, groupName, subGroupRoleName);
   } catch (error) {
     const err = error as Error;
-    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, 'fetchUsersByRole()');
+    loggerService.error(`${err.name}: ${err.message}\n${err.stack}`, logContext);
     throw error;
   }
 };
