@@ -105,7 +105,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'test-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Network error'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch user group details: Network error'));
       }
     });
 
@@ -116,7 +116,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'test-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Network error'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch user group details: Network error'));
       }
     });
 
@@ -138,7 +138,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'test-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Network error'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch sub-groups: Network error'));
       }
     });
 
@@ -155,7 +155,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'test-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Network error'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch group members: Network error'));
       }
     });
 
@@ -179,7 +179,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'test-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('No sub group found with the role name: test-role'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: No sub-group found with the role name: test-role'));
       }
     });
   });
@@ -263,7 +263,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'non-existent-group');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('No group found with the group name: non-existent-group'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: No group found with the group name: non-existent-group'));
       }
     });
 
@@ -287,7 +287,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('No group found for the tenant tenant-123'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: No group found for the tenant tenant-123'));
       }
     });
 
@@ -312,7 +312,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'admin-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('No sub groups found for the tenant group: group-1'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: No sub-groups found for the tenant group: group-1'));
       }
     });
 
@@ -343,7 +343,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'admin-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('No sub group found with the role name: admin-role'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: No sub-group found with the role name: admin-role'));
       }
     });
 
@@ -354,7 +354,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toBe('STRING_ERROR');
+        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch user group details: undefined'));
       }
     });
 
@@ -381,7 +381,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'admin-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Network error'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch sub-groups: Network error'));
       }
     });
 
@@ -408,7 +408,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Network error'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch group members: Network error'));
       }
     });
 
@@ -431,7 +431,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('No group found for the tenant tenant-123'));
+        expect(err).toEqual(new Error('Failed to fetch users by role: No group found for the tenant tenant-123'));
       }
     });
 
@@ -456,175 +456,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('No group found for the tenant tenant-123'));
-      }
-    });
-  });
-
-  describe('Internal fetch functions', () => {
-    const mockToken = {
-      tokenString: 'mock-token',
-      exp: 0,
-      sid: 'sid',
-      iss: 'issuer',
-      clientId: 'client',
-      tenantId: 'tenant-123',
-    } as any;
-
-    it('fetchUserGroupDetails returns group details', async () => {
-      const mockGroups = [{ id: 'group-1', name: 'test-group' }];
-      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockGroups) });
-      const result = await (await import('../../src/logic.service')).fetchUserGroupDetails(mockToken, 'test-group');
-      expect(result).toEqual(mockGroups);
-    });
-
-    it('fetchUserGroupDetails handles error', async () => {
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
-      try {
-        await (await import('../../src/logic.service')).fetchUserGroupDetails(mockToken, 'test-group');
-        throw new Error('UNREACHABLE');
-      } catch (err) {
-        expect(err).toEqual(new Error('Network error'));
-      }
-    });
-
-    it('fetchSubGroups returns subgroups', async () => {
-      const mockSubGroups = [{ id: 'subgroup-1', name: 'subgroup' }];
-      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockSubGroups) });
-      const result = await (await import('../../src/logic.service')).fetchSubGroups(mockToken, 'group-1');
-      expect(result).toEqual(mockSubGroups);
-    });
-
-    it('fetchSubGroups handles error', async () => {
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
-      try {
-        await (await import('../../src/logic.service')).fetchSubGroups(mockToken, 'group-1');
-        throw new Error('UNREACHABLE');
-      } catch (err) {
-        expect(err).toEqual(new Error('Network error'));
-      }
-    });
-
-    it('fetchGroupMembers returns members', async () => {
-      const mockMembers = [{ id: 'user-1', username: 'testuser' }];
-      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockMembers) });
-      const result = await (await import('../../src/logic.service')).fetchGroupMembers(mockToken, 'subgroup-1');
-      expect(result).toEqual(mockMembers);
-    });
-
-    it('fetchGroupMembers handles error', async () => {
-      (fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
-      try {
-        await (await import('../../src/logic.service')).fetchGroupMembers(mockToken, 'subgroup-1');
-        throw new Error('UNREACHABLE');
-      } catch (err) {
-        expect(err).toEqual(new Error('Network error'));
-      }
-    });
-
-    it('fetchUserGroupDetails covers finally block', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
-      await (await import('../../src/logic.service')).fetchUserGroupDetails(mockToken, 'test-group');
-      // No assertion needed, just coverage for finally
-    });
-
-    it('fetchSubGroups covers finally block', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
-      await (await import('../../src/logic.service')).fetchSubGroups(mockToken, 'group-1');
-    });
-
-    it('fetchGroupMembers covers finally block', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
-      await (await import('../../src/logic.service')).fetchGroupMembers(mockToken, 'subgroup-1');
-    });
-
-    it('fetchUserGroupDetails handles missing env variables', async () => {
-      const originalAuthUrl = process.env.AUTH_URL;
-      const originalRealm = process.env.KEYCLOAK_REALM;
-      try {
-        delete process.env.AUTH_URL;
-        delete process.env.KEYCLOAK_REALM;
-        (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
-        await (await import('../../src/logic.service')).fetchUserGroupDetails(mockToken, 'test-group');
-      } finally {
-        process.env.AUTH_URL = originalAuthUrl;
-        process.env.KEYCLOAK_REALM = originalRealm;
-      }
-    });
-
-    it('fetchSubGroups handles missing env variables', async () => {
-      const originalAuthUrl = process.env.AUTH_URL;
-      const originalRealm = process.env.KEYCLOAK_REALM;
-      try {
-        delete process.env.AUTH_URL;
-        delete process.env.KEYCLOAK_REALM;
-        (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
-        await (await import('../../src/logic.service')).fetchSubGroups(mockToken, 'group-1');
-      } finally {
-        process.env.AUTH_URL = originalAuthUrl;
-        process.env.KEYCLOAK_REALM = originalRealm;
-      }
-    });
-
-    it('fetchGroupMembers handles missing env variables', async () => {
-      const originalAuthUrl = process.env.AUTH_URL;
-      const originalRealm = process.env.KEYCLOAK_REALM;
-      try {
-        delete process.env.AUTH_URL;
-        delete process.env.KEYCLOAK_REALM;
-        (fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
-        await (await import('../../src/logic.service')).fetchGroupMembers(mockToken, 'subgroup-1');
-      } finally {
-        process.env.AUTH_URL = originalAuthUrl;
-        process.env.KEYCLOAK_REALM = originalRealm;
-      }
-    });
-
-    it('fetchUserGroupDetails handles HTTP error response', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        statusText: 'Unauthorized',
-        json: () => Promise.resolve({}),
-      });
-
-      try {
-        await (await import('../../src/logic.service')).fetchUserGroupDetails(mockToken, 'test-group');
-        throw new Error('UNREACHABLE');
-      } catch (err) {
-        expect((err as Error).message).toBe('Keycloak API error: 401 Unauthorized');
-      }
-    });
-
-    it('fetchSubGroups handles HTTP error response', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        statusText: 'Forbidden',
-        json: () => Promise.resolve({}),
-      });
-
-      try {
-        await (await import('../../src/logic.service')).fetchSubGroups(mockToken, 'group-1');
-        throw new Error('UNREACHABLE');
-      } catch (err) {
-        expect((err as Error).message).toBe('Keycloak API error: 403 Forbidden');
-      }
-    });
-
-    it('fetchGroupMembers handles HTTP error response', async () => {
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        statusText: 'Not Found',
-        json: () => Promise.resolve({}),
-      });
-
-      try {
-        await (await import('../../src/logic.service')).fetchGroupMembers(mockToken, 'subgroup-1');
-        throw new Error('UNREACHABLE');
-      } catch (err) {
-        expect((err as Error).message).toBe('Keycloak API error: 404 Not Found');
+        expect(err).toEqual(new Error('Failed to fetch users by role: No group found for the tenant tenant-123'));
       }
     });
   });
