@@ -35,7 +35,24 @@ export const authenticateRequest = (authorizationHeader: string | undefined): Au
 
     return { success: true, decodedToken };
   } catch (err) {
-    loggerService.error(`Token verification failed: ${(err as Error).message}`, 'authenticateRequest');
-    return unauthorized('Unauthorized');
+    const error = err as Error;
+    loggerService.error(`Token verification failed: ${error.message}`, 'authenticateRequest');
+
+    // Return unauthorized for authentication/authorization errors
+    if (
+      error.message.includes('jwt') ||
+      error.message.includes('token') ||
+      error.message.includes('expired') ||
+      error.message.includes('invalid') ||
+      error.message.includes('signature') ||
+      error.name === 'JsonWebTokenError' ||
+      error.name === 'TokenExpiredError' ||
+      error.name === 'NotBeforeError'
+    ) {
+      return unauthorized('Unauthorized');
+    }
+
+    // Throw other errors
+    throw err;
   }
 };
