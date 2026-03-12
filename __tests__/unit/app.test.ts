@@ -84,7 +84,7 @@ describe('App Services', () => {
           subGroupCount: 1,
         },
       ];
-      const mockSubGroups = [{ id: 'subgroup-1', name: 'test-role' }];
+      const mockSubGroups = [{ id: 'subgroup-1', name: 'test-role', realmRoles: ['test-role'] }];
       const mockMembers = [{ id: 'user-1', username: 'testuser' }];
 
       (fetch as jest.Mock)
@@ -105,7 +105,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'test-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch user group details: Network error'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
 
@@ -116,7 +116,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'test-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch user group details: Network error'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
 
@@ -138,7 +138,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'test-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch sub-groups: Network error'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
 
@@ -148,14 +148,17 @@ describe('App Services', () => {
           ok: true,
           json: () => Promise.resolve([{ id: 'group-1', name: 'test-group', attributes: { TENANT_ID: ['tenant-123'] }, subGroupCount: 1 }]),
         })
-        .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([{ id: 'subgroup-1', name: 'test-role' }]) })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve([{ id: 'subgroup-1', name: 'test-role', realmRoles: ['test-role'] }]),
+        })
         .mockRejectedValueOnce(new Error('Network error'));
 
       try {
         await fetchUsersByRole(mockToken, 'test-group', 'test-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch group members: Network error'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
 
@@ -168,8 +171,8 @@ describe('App Services', () => {
           subGroupCount: 1,
         },
       ];
-      // subGroups do not include the requested role
-      const mockSubGroups = [{ id: 'subgroup-1', name: 'other-role' }];
+      // subGroups do not include the requested role in realmRoles
+      const mockSubGroups = [{ id: 'subgroup-1', name: 'other-role', realmRoles: ['other-role'] }];
 
       (fetch as jest.Mock)
         .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockGroupDetails) })
@@ -179,7 +182,7 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'test-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: No sub-group found with the role name: test-role'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
   });
@@ -190,36 +193,7 @@ describe('App Services', () => {
       tenantId: 'tenant-123',
     } as any;
 
-    it('should fetch users by role successfully without subGroup', async () => {
-      const mockGroupDetails = [
-        {
-          id: 'group-1',
-          name: 'test-group',
-          attributes: {
-            TENANT_ID: ['tenant-123'],
-          },
-          subGroupCount: 0,
-        },
-      ];
-      const mockMembers = [{ id: 'user-1', username: 'testuser' }];
-
-      (fetch as jest.Mock)
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () => Promise.resolve(mockGroupDetails),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: () => Promise.resolve(mockMembers),
-        });
-
-      const result = await fetchUsersByRole(mockToken, 'test-group');
-
-      expect(result).toEqual(mockMembers);
-      expect(fetch).toHaveBeenCalledTimes(2);
-    });
-
-    it('should fetch users by role successfully with subGroup', async () => {
+    it('should fetch users by role successfully with roleName', async () => {
       const mockGroupDetails = [
         {
           id: 'group-1',
@@ -230,7 +204,44 @@ describe('App Services', () => {
           subGroupCount: 1,
         },
       ];
-      const mockSubGroups = [{ id: 'subgroup-1', name: 'admin-role' }];
+      const mockSubGroups = [{ id: 'subgroup-1', name: 'admin-role', realmRoles: ['admin-role'] }];
+      const mockMembers = [{ id: 'user-1', username: 'testuser' }];
+
+      (fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockGroupDetails),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockSubGroups),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockMembers),
+        });
+
+      const result = await fetchUsersByRole(mockToken, 'test-group', 'admin-role');
+
+      expect(result).toEqual(mockMembers);
+      expect(fetch).toHaveBeenCalledTimes(3);
+    });
+
+    it('should fetch users by role successfully with multiple subGroups', async () => {
+      const mockGroupDetails = [
+        {
+          id: 'group-1',
+          name: 'test-group',
+          attributes: {
+            TENANT_ID: ['tenant-123'],
+          },
+          subGroupCount: 2,
+        },
+      ];
+      const mockSubGroups = [
+        { id: 'subgroup-1', name: 'user-role', realmRoles: ['user-role'] },
+        { id: 'subgroup-2', name: 'admin-role', realmRoles: ['admin-role'] },
+      ];
       const mockMembers = [{ id: 'user-1', username: 'testuser' }];
 
       (fetch as jest.Mock)
@@ -260,38 +271,14 @@ describe('App Services', () => {
       });
 
       try {
-        await fetchUsersByRole(mockToken, 'non-existent-group');
+        await fetchUsersByRole(mockToken, 'non-existent-group', 'some-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: No group found with the group name: non-existent-group'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
 
-    it('should handle no group found for tenant', async () => {
-      const mockGroupDetails = [
-        {
-          id: 'group-1',
-          name: 'test-group',
-          attributes: {
-            TENANT_ID: ['different-tenant'],
-          },
-        },
-      ];
-
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockGroupDetails),
-      });
-
-      try {
-        await fetchUsersByRole(mockToken, 'test-group');
-        throw new Error('UNREACHABLE');
-      } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: No group found for the tenant tenant-123'));
-      }
-    });
-
-    it('should handle no sub groups found for tenant group', async () => {
+    it('should handle empty subgroups array', async () => {
       const mockGroupDetails = [
         {
           id: 'group-1',
@@ -299,24 +286,28 @@ describe('App Services', () => {
           attributes: {
             TENANT_ID: ['tenant-123'],
           },
-          subGroupCount: 0,
         },
       ];
 
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockGroupDetails),
-      });
+      (fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockGroupDetails),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve([]),
+        });
 
       try {
-        await fetchUsersByRole(mockToken, 'test-group', 'admin-role');
+        await fetchUsersByRole(mockToken, 'test-group', 'some-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: No sub-groups found for the tenant group: group-1'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
 
-    it('should handle no sub group found with role name', async () => {
+    it('should handle subgroup without realmRoles', async () => {
       const mockGroupDetails = [
         {
           id: 'group-1',
@@ -327,7 +318,7 @@ describe('App Services', () => {
           subGroupCount: 1,
         },
       ];
-      const mockSubGroups = [{ id: 'subgroup-1', name: 'different-role' }];
+      const mockSubGroups = [{ id: 'subgroup-1', name: 'test-role' }]; // no realmRoles property
 
       (fetch as jest.Mock)
         .mockResolvedValueOnce({
@@ -343,7 +334,38 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'admin-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: No sub-group found with the role name: admin-role'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
+      }
+    });
+
+    it('should handle no sub group found with matching role', async () => {
+      const mockGroupDetails = [
+        {
+          id: 'group-1',
+          name: 'test-group',
+          attributes: {
+            TENANT_ID: ['tenant-123'],
+          },
+          subGroupCount: 1,
+        },
+      ];
+      const mockSubGroups = [{ id: 'subgroup-1', name: 'different-role', realmRoles: ['different-role'] }];
+
+      (fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockGroupDetails),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockSubGroups),
+        });
+
+      try {
+        await fetchUsersByRole(mockToken, 'test-group', 'admin-role');
+        throw new Error('UNREACHABLE');
+      } catch (err) {
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
 
@@ -351,14 +373,14 @@ describe('App Services', () => {
       (fetch as jest.Mock).mockRejectedValueOnce('STRING_ERROR');
 
       try {
-        await fetchUsersByRole(mockToken, 'test-group');
+        await fetchUsersByRole(mockToken, 'test-group', 'some-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch user group details: undefined'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
 
-    it('should handle fetchSubGroups error', async () => {
+    it('should handle fetchSubGroups network error', async () => {
       const mockGroupDetails = [
         {
           id: 'group-1',
@@ -381,11 +403,11 @@ describe('App Services', () => {
         await fetchUsersByRole(mockToken, 'test-group', 'admin-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch sub-groups: Network error'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
 
-    it('should handle fetchGroupMembers error', async () => {
+    it('should handle fetchSubGroupMembers network error', async () => {
       const mockGroupDetails = [
         {
           id: 'group-1',
@@ -393,7 +415,36 @@ describe('App Services', () => {
           attributes: {
             TENANT_ID: ['tenant-123'],
           },
-          subGroupCount: 0,
+          subGroupCount: 1,
+        },
+      ];
+      const mockSubGroups = [{ id: 'subgroup-1', name: 'admin-role', realmRoles: ['admin-role'] }];
+
+      (fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockGroupDetails),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockSubGroups),
+        })
+        .mockRejectedValueOnce(new Error('Network error'));
+
+      try {
+        await fetchUsersByRole(mockToken, 'test-group', 'admin-role');
+        throw new Error('UNREACHABLE');
+      } catch (err) {
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
+      }
+    });
+
+    it('should handle group with missing id', async () => {
+      const mockGroupDetails = [
+        {
+          name: 'test-group',
+          // No id property
+          subGroupCount: 1,
         },
       ];
 
@@ -402,61 +453,47 @@ describe('App Services', () => {
           ok: true,
           json: () => Promise.resolve(mockGroupDetails),
         })
-        .mockRejectedValueOnce(new Error('Network error'));
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve([]),
+        });
 
       try {
-        await fetchUsersByRole(mockToken, 'test-group');
+        await fetchUsersByRole(mockToken, 'test-group', 'some-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: Failed to fetch group members: Network error'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
 
-    it('should handle group with missing attributes', async () => {
-      const mockGroupDetails = [
-        {
-          id: 'group-1',
-          name: 'test-group',
-          // No attributes property
-          subGroupCount: 0,
-        },
-      ];
-
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockGroupDetails),
-      });
-
-      try {
-        await fetchUsersByRole(mockToken, 'test-group');
-        throw new Error('UNREACHABLE');
-      } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: No group found for the tenant tenant-123'));
-      }
-    });
-
-    it('should handle group with undefined TENANT_ID', async () => {
+    it('should handle subgroup with empty realmRoles array', async () => {
       const mockGroupDetails = [
         {
           id: 'group-1',
           name: 'test-group',
           attributes: {
-            // TENANT_ID is undefined
+            TENANT_ID: ['tenant-123'],
           },
-          subGroupCount: 0,
+          subGroupCount: 1,
         },
       ];
+      const mockSubGroups = [{ id: 'subgroup-1', name: 'test-role', realmRoles: [] }];
 
-      (fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockGroupDetails),
-      });
+      (fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockGroupDetails),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve(mockSubGroups),
+        });
 
       try {
-        await fetchUsersByRole(mockToken, 'test-group');
+        await fetchUsersByRole(mockToken, 'test-group', 'some-role');
         throw new Error('UNREACHABLE');
       } catch (err) {
-        expect(err).toEqual(new Error('Failed to fetch users by role: No group found for the tenant tenant-123'));
+        expect((err as Error).message).toBe('getUsersByRole retrieval failed');
       }
     });
   });

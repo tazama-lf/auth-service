@@ -1,4 +1,5 @@
 import type { TazamaAuthentication } from '@tazama-lf/auth-lib';
+
 const authLib = jest.requireActual('@tazama-lf/auth-lib');
 class MockAuthenticationService extends (authLib.TazamaAuthentication as typeof TazamaAuthentication) {
   getToken(...args: unknown[]): Promise<string> {
@@ -9,6 +10,23 @@ class MockAuthenticationService extends (authLib.TazamaAuthentication as typeof 
     } else {
       return Promise.resolve(`${args[0]}`);
     }
+  }
+
+  // Override to delegate to actual provider implementation
+  async fetchUsersByRole(...args: unknown[]): Promise<unknown> {
+    // Since tests mock the underlying fetch calls, we need to call the provider directly
+    // Create a mock provider instance if needed
+    const self = this as any;
+    if (!self.activeInstance) {
+      // Import KeycloakProvider dynamically to avoid circular dependency
+      const { KeycloakProvider } = await import('@tazama-lf/auth-lib-provider-keycloak/lib/provider');
+      // Manually set up a mock active instance for testing
+      const provider = new KeycloakProvider();
+      self.providerInstances.set('test-provider', provider);
+      self.activeInstance = 'test-provider';
+    }
+
+    return await super.fetchUsersByRole(...args);
   }
 }
 
