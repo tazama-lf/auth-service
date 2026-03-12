@@ -6,10 +6,6 @@ import type { TazamaToken } from '@tazama-lf/auth-lib';
 // Mock fetch globally
 global.fetch = jest.fn();
 
-// Mock environment variables
-process.env.AUTH_URL = 'https://test-auth.com';
-process.env.KEYCLOAK_REALM = 'test-realm';
-
 describe('App Services', () => {
   beforeEach(() => {
     jest.clearAllMocks();
