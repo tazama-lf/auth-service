@@ -24,7 +24,7 @@ export default async function initializeFastifyClient(): Promise<FastifyInstance
   fastify.setValidatorCompiler(({ schema }) => ajv.compile(schema));
   await fastify.register(fastifyCors, {
     origin: '*',
-    methods: ['POST'],
+    methods: ['GET', 'POST'],
     allowedHeaders: '*',
   });
   fastify.register(Routes);
