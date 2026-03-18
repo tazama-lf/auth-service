@@ -56,7 +56,7 @@ export const FetchGroup = async (req: FastifyRequest, reply: FastifyReply): Prom
     }
 
     // Get role name from route params (if present) or fallback to query param
-    const roleName = (req.params as { rolename?: string }).rolename ?? subGroupRoleName;
+    const roleName = (req.params as { rolename: string }).rolename ?? subGroupRoleName;
     const response = await fetchUsersByRole(authResult.decodedToken, groupName, roleName);
 
     reply.code(StatusCodes.OK).send(response);
