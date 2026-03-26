@@ -1,3 +1,9 @@
+// Set mock Keycloak environment variables for testing
+process.env.AUTH_URL = 'http://localhost:8080';
+process.env.KEYCLOAK_REALM = 'test-realm';
+process.env.CLIENT_ID = 'test-client';
+process.env.CLIENT_SECRET = 'test-secret';
+
 import type { TazamaAuthentication, TazamaToken, TazamaUser } from '@tazama-lf/auth-lib';
 
 const authLib = jest.requireActual('@tazama-lf/auth-lib');
