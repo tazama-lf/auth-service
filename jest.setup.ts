@@ -1,9 +1,3 @@
-// Set mock Keycloak environment variables for testing
-process.env.AUTH_URL = 'http://localhost:8080';
-process.env.KEYCLOAK_REALM = 'test-realm';
-process.env.CLIENT_ID = 'test-client';
-process.env.CLIENT_SECRET = 'test-secret';
-
 import type { TazamaAuthentication, TazamaToken, TazamaUser } from '@tazama-lf/auth-lib';
 
 const authLib = jest.requireActual('@tazama-lf/auth-lib');
@@ -18,18 +12,7 @@ class MockAuthenticationService extends (authLib.TazamaAuthentication as typeof 
     }
   }
 
-  // Override to delegate to actual provider implementation
-  async fetchUsersByRole(token: TazamaToken, groupName: string, roleName: string): Promise<TazamaUser[]> {
-    const self = this as any;
-    if (!self.activeInstance) {
-      const { KeycloakProvider } = await import('@tazama-lf/auth-lib-provider-keycloak/lib/provider');
-      const provider = new KeycloakProvider();
-      self.providerInstances.set('test-provider', provider);
-      self.activeInstance = 'test-provider';
-    }
-
-    return await super.fetchUsersByRole(token, groupName, roleName);
-  }
+  fetchUsersByRole = jest.fn<Promise<TazamaUser[]>, [TazamaToken, string, string]>();
 }
 
 const mockedAuthLib = { ...authLib, TazamaAuthentication: MockAuthenticationService };
