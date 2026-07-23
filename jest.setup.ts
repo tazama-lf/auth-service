@@ -1,4 +1,5 @@
-import type { TazamaAuthentication } from '@tazama-lf/auth-lib';
+import type { TazamaAuthentication, TazamaToken, TazamaUser } from '@tazama-lf/auth-lib';
+
 const authLib = jest.requireActual('@tazama-lf/auth-lib');
 class MockAuthenticationService extends (authLib.TazamaAuthentication as typeof TazamaAuthentication) {
   getToken(...args: unknown[]): Promise<string> {
@@ -10,6 +11,8 @@ class MockAuthenticationService extends (authLib.TazamaAuthentication as typeof 
       return Promise.resolve(`${args[0]}`);
     }
   }
+
+  fetchUsersByRole = jest.fn<Promise<TazamaUser[]>, [TazamaToken, string, string]>();
 }
 
 const mockedAuthLib = { ...authLib, TazamaAuthentication: MockAuthenticationService };
@@ -26,6 +29,18 @@ jest.mock('@tazama-lf/frms-coe-lib/lib/config', () => ({
     nodeEnv: 'test',
   }),
   validateLogConfig: jest.fn().mockReturnValue({
-    logLevel: '',
+    logLevel: 'info',
   }),
+}));
+
+// Mock LoggerService to prevent initialization errors
+jest.mock('@tazama-lf/frms-coe-lib', () => ({
+  LoggerService: jest.fn().mockImplementation(() => ({
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+  })),
+  validateEnvVar: jest.fn().mockReturnValue(''),
 }));
